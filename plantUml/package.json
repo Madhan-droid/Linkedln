@@ -1,0 +1,12 @@
+{
+  "name": "plantuml",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "java -jar server/plantuml-1.2025.10.jar"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

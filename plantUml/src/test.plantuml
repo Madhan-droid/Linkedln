@@ -1,0 +1,48 @@
+@startuml Refresh Token Logic
+
+title Refresh Token and Access Token Handling
+
+participant "App" as App
+participant "ResourceApi" as Resource
+participant "RefreshTokenApi" as RefreshApi
+participant "Login Page" as Login
+
+== Attempt to Access Resource ==
+
+App -> Resource : Request with Access Token
+
+alt#Gold #LightBlue 200 OK
+    Resource --> App : Authorized ✅
+else #Pink Access Token Expired - 401
+    Resource --> App : Unauthorized - Token Expired
+
+    == Try to Refresh Token ==
+    App -> RefreshApi : Request with Refresh Token
+
+    alt#Gold #LightBlue 200 OK (New Token)
+        RefreshApi --> App : New Access Token
+        App -> Resource : Retry with New Access Token
+        Resource --> App : Authorized ✅
+        
+    else #Pink Refresh Token Expired - 401
+        RefreshApi --> App : Unauthorized
+        App -> Login : Redirect to Login Page
+    else #Pink Refresh Token Missing - 401
+        RefreshApi --> App : Unauthorized
+        App -> Login : Redirect to Login Page
+    else #Pink Refresh Token Revoked - 403
+        RefreshApi --> App : Forbidden - Session Invalid
+        App -> Login : Redirect to Login Page
+    else #Pink Refresh Token Tampered - 403
+        RefreshApi --> App : Forbidden - Security Alert
+        App -> Login : Redirect to Login Page
+    end
+
+else #Pink Access Token Invalid - 401
+    Resource --> App : Unauthorized - Tampered Token
+    App -> Login : Redirect to Login Page
+else #Pink Access Token Valid - But No Permission - 403
+    Resource --> App : Forbidden - No Access
+end
+
+@enduml
